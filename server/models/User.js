@@ -33,6 +33,98 @@ const userSchema = new mongoose.Schema(
       ],
       default: "candidate",
     },
+
+    // Professional Details
+    currentRole: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    experience: {
+      type: String,
+      default: "",
+    },
+
+    course: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    dreamCompany: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    bio: {
+      type: String,
+      default: "",
+      maxlength: 500,
+    },
+
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    location: {
+      type: String,
+      default: "",
+    },
+
+    website: {
+      type: String,
+      default: "",
+    },
+
+    objective: {
+      type: String,
+      default: "",
+    },
+
+    // Social Links
+    linkedin: {
+      type: String,
+      default: "",
+    },
+
+    github: {
+      type: String,
+      default: "",
+    },
+
+    leetcode: {
+      type: String,
+      default: "",
+    },
+
+    portfolio: {
+      type: String,
+      default: "",
+    },
+
+    resumeUrl: {
+      type: String,
+      default: "",
+    },
+
+    // Profile Stats
+    bestScore: {
+      type: Number,
+      default: 0,
+    },
+
+    totalInterviews: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
