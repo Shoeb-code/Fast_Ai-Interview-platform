@@ -190,8 +190,8 @@ GEMINI_API_KEY=your_api_key
 
 Full Stack Developer | AI SaaS Builder
 
-- GitHub: https://github.com/shoebkhan
-- LinkedIn: https://linkedin.com/in/shoeb-khan
+- GitHub: [https://github.com/shoebkhan](https://github.com/Shoeb-code)
+- LinkedIn: [https://linkedin.com/in/shoeb-khan](https://www.linkedin.com/in/shoeb-khan-480b58259/)
 
 ---
 
