@@ -1,4 +1,81 @@
-return (
+import React, { useState } from "react";
+import { X, Save } from "lucide-react";
+import api from "../../services/api";
+
+const EditProfileModal = ({
+  isOpen,
+  onClose,
+  profile,
+  setProfile,
+}) => {
+  const [formData, setFormData] =
+    useState({
+      fullName:
+        profile?.fullName || "",
+      currentRole:
+        profile?.currentRole || "",
+      experience:
+        profile?.experience || "",
+      course:
+        profile?.course || "",
+      dreamCompany:
+        profile?.dreamCompany || "",
+      bio: profile?.bio || "",
+      phone:
+        profile?.phone || "",
+      location:
+        profile?.location || "",
+      website:
+        profile?.website || "",
+      objective:
+        profile?.objective || "",
+      linkedin:
+        profile?.linkedin || "",
+      github:
+        profile?.github || "",
+      leetcode:
+        profile?.leetcode || "",
+      portfolio:
+        profile?.portfolio || "",
+    });
+
+  const [loading, setLoading] =
+    useState(false);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]:
+        e.target.value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const res = await api.put(
+        "/users/edit-profile",
+        formData
+      );
+
+      if (res.data.success) {
+        setProfile(res.data.user);
+        onClose();
+      }
+    } catch (error) {
+      console.error(
+        "Update failed",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
     <>
       {/* Backdrop */}
       <div
@@ -143,5 +220,21 @@ return (
       </div>
     </>
   );
+};
 
-  
+const Input = ({
+  label,
+  ...props
+}) => (
+  <div>
+    <p className="mb-2 text-xs text-slate-500">
+      {label}
+    </p>
+    <input
+      {...props}
+      className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-white outline-none"
+    />
+  </div>
+);
+
+export default EditProfileModal;

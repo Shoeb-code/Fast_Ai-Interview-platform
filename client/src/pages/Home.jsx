@@ -14,7 +14,7 @@ const Home = () => {
       <HowItWorksSection />
       <TestimonialsSection />
       <CTASection />
-      <Footer />
+      <Footer  />
     </div>
   );
 };

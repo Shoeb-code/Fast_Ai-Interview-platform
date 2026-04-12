@@ -43,6 +43,140 @@ const register = async (req, res, next) => {
  }
 };
 
+const sendRegisterOtp = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { email } = req.body;
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const existingUser =
+      await User.findOne({
+        email: normalizedEmail,
+      });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "User already exists",
+      });
+    }
+
+    const otp = Math.floor(
+      100000 +
+        Math.random() * 900000
+    ).toString();
+
+    await Otp.findOneAndDelete({
+      email: normalizedEmail,
+      purpose: "register",
+    });
+
+    await Otp.create({
+      email: normalizedEmail,
+      otp,
+      purpose: "register",
+      expiresAt: new Date(
+        Date.now() +
+          5 * 60 * 1000
+      ),
+    });
+
+    await sendOtpEmail(
+      normalizedEmail,
+      otp
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "OTP sent successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyRegisterOtp =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const {
+        fullName,
+        email,
+        password,
+        otp,
+      } = req.body;
+
+      const normalizedEmail =
+        email
+          .trim()
+          .toLowerCase();
+
+      const otpDoc =
+        await Otp.findOne({
+          email:
+            normalizedEmail,
+          otp:
+            otp.toString(),
+          purpose:
+            "register",
+        });
+
+      if (!otpDoc) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid OTP",
+        });
+      }
+
+      if (
+        otpDoc.expiresAt <
+        new Date()
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "OTP expired",
+        });
+      }
+
+      const user =
+        await User.create({
+          fullName,
+          email:
+            normalizedEmail,
+          password,
+        });
+
+      await Otp.deleteOne({
+        _id: otpDoc._id,
+      });
+
+      const token =
+        generateToken(
+          user._id
+        );
+
+      return res.status(201).json({
+        success: true,
+        token,
+        user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
 // login
 const login = async (req, res, next) => {
   try {
@@ -81,16 +215,39 @@ const login = async (req, res, next) => {
   }
 };
 
+
+
 // getProfile
-const getProfile = async (req, res, next) => {
+const getProfile = async (
+  req,
+  res,
+  next
+) => {
   try {
+    const user =
+      await User.findById(
+        req.user.id
+      ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "User not found",
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      user: req.user,
+      user,
     });
   } catch (error) {
     next(error);
   }
+};
+
+module.exports = {
+  getProfile,
 };
 
 const forgotPassword = async (
@@ -270,7 +427,11 @@ module.exports = {
   register,
   login,
   getProfile,
+
   forgotPassword,
   verifyOtp,
-  resetPassword
-};
+  resetPassword,
+
+  sendRegisterOtp,
+  verifyRegisterOtp,
+};;

@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const ProfileSidebar = ({
   isOpen,
@@ -17,6 +18,8 @@ const ProfileSidebar = ({
   user,
   logout,
 }) => {
+
+  const { user: authUser }= useAuth()
   if (!isOpen) return null;
 
   return (
@@ -70,7 +73,7 @@ const ProfileSidebar = ({
                 Interviews
               </p>
               <p className="mt-2 text-xl font-bold text-white">
-                12
+                 {authUser?.totalInterviews }
               </p>
             </div>
 
@@ -79,7 +82,7 @@ const ProfileSidebar = ({
                 Best Score
               </p>
               <p className="mt-2 text-xl font-bold text-white">
-                9.4
+              {authUser?.bestScore}
               </p>
             </div>
           </div>

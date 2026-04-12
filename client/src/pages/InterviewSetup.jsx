@@ -50,6 +50,7 @@ const InterviewSetup = () => {
         {/* ── Hero + Form ── */}
         <div className="grid items-start gap-10 lg:grid-cols-2">
           <SetupHero />
+          
           <InterviewFormCard
             role={role}
             setRole={setRole}

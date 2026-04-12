@@ -116,7 +116,7 @@ const Navbar = () => {
       <ProfileSidebar
         isOpen={profileOpen}
         onClose={() =>
-          setProfileOpen(false)
+        setProfileOpen(false)
         }
         user={user}
         logout={logout}

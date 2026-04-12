@@ -35,7 +35,7 @@ const InterviewHistoryCard = ({ item }) => {
       {/* Score */}
       <div className="mt-5 flex items-center justify-between">
         <p className="text-sm text-gray-400">
-          Performance Score
+          Performance Score 
         </p>
 
         <span

@@ -10,7 +10,7 @@ const generateQuestions = async (
   level
 ) => {
   try {
-    const prompt = `
+const prompt = `
 You are an expert technical interviewer.
 
 Generate exactly 5 interview questions for:
