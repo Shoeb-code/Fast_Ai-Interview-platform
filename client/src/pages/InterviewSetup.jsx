@@ -18,26 +18,58 @@ const InterviewSetup = () => {
 
   const handleStart = async () => {
     if (!role.trim()) {
-      toast.error("Please enter your target role");
+      toast.error(
+        "Please enter your target role"
+      );
       return;
     }
-
+  
     try {
       setLoading(true);
-
-      const token = localStorage.getItem("token");
-
-      const res = await api.post(
-        "/interview/start",
-        { role, level },
-        { headers: { Authorization: `Bearer ${token}` } }
+  
+      const token =
+        localStorage.getItem(
+          "token"
+        );
+  
+      const res =
+        await api.post(
+          "/interview/start",
+          {
+            role,
+            level,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+      console.log(
+        "START RESPONSE:",
+        res.data
       );
-
+  
       navigate("/session", {
-        state: { interview: res.data.interview },
+        state: {
+          interview:
+            res.data.interview,
+        },
       });
     } catch (error) {
-      toast.error("Failed to start interview. Please try again.");
+      console.error(
+        "START INTERVIEW ERROR:",
+        error.response?.data ||
+          error
+      );
+  
+      const message =
+        error?.response?.data
+          ?.message ||
+        "Failed to start interview. Please try again.";
+  
+      toast.error(message);
     } finally {
       setLoading(false);
     }

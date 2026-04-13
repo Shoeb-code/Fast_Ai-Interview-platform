@@ -8,11 +8,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const PerformanceRadarChart = ({ result }) => {
+const PerformanceRadarChart = ({ result = {} }) => {
   const data = [
     {
       subject: "Confidence",
-      value: result.confidence || 86,
+      value: (result.confidence || 8.6) * 10,
     },
     {
       subject: "Clarity",
@@ -24,11 +24,11 @@ const PerformanceRadarChart = ({ result }) => {
     },
     {
       subject: "Communication",
-      value: 84,
+      value: (result.communication || 8.4) * 10,
     },
     {
       subject: "Problem Solving",
-      value: 88,
+      value: (result.problemSolving || 8.8) * 10,
     },
   ];
 

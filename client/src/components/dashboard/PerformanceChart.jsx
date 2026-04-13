@@ -8,73 +8,127 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload || !payload.length) return null;
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}) => {
+  if (!active || !payload?.length)
+    return null;
+
+  const point = payload[0]?.payload;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-900/90 px-4 py-3 shadow-xl backdrop-blur-xl">
-      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-xs text-gray-400">
+        {label}
+      </p>
+
       <p className="mt-1 text-sm font-semibold text-white">
-        Score: {payload[0].value}
+        Test Score: {point?.score ?? 0}
       </p>
     </div>
   );
 };
 
-const PerformanceChart = ({ data }) => {
-  const latestScore =
-    data?.length > 0 ? data[data.length - 1]?.score : 0;
+const PerformanceChart = ({
+  data = [],
+}) => {
+  const chartData = data.map(
+    (item, index) => ({
+      ...item,
+      score: item.score || 0,
+      label: `Attempt ${index + 1}`,
+    })
+  );
+
+  const bestScore =
+    chartData.length > 0
+      ? Math.max(
+          ...chartData.map(
+            (item) =>
+              item.score || 0
+          )
+        )
+      : 0;
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
-      
-      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-400">
             Analytics
           </p>
 
-          <h2 className="mt-1 text-2xl font-bold text-white">
+          <h2 className="mt-1 text-2xl font-bold text-green-700">
             Performance Trend
           </h2>
         </div>
 
         <div className="rounded-2xl bg-white/5 px-4 py-2 ring-1 ring-white/10">
           <p className="text-xs text-gray-400">
-            Latest Score
+            Best Score
           </p>
+
           <p className="text-lg font-bold text-white">
-            {latestScore}
+            {bestScore}
           </p>
         </div>
       </div>
 
-      {/* Chart */}
-      <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={data}>
+      <ResponsiveContainer
+        width="100%"
+        height={320}
+      >
+        <LineChart
+          data={chartData}
+          margin={{
+            top: 5,
+            right: 20,
+            left: 0,
+            bottom: 5,
+          }}
+        >
           <CartesianGrid
             strokeDasharray="4 4"
             stroke="rgba(255,255,255,0.08)"
           />
 
           <XAxis
-            dataKey="date"
-            tick={{ fill: "#94a3b8", fontSize: 12 }}
+            dataKey="label"
+            tick={{
+              fill: "#94a3b8",
+              fontSize: 12,
+            }}
             axisLine={false}
             tickLine={false}
+            padding={{
+              left: 0,
+              right: 0,
+            }}
           />
 
           <YAxis
-            tick={{ fill: "#94a3b8", fontSize: 12 }}
+            domain={[
+              0,
+              "dataMax + 1",
+            ]}
+            tick={{
+              fill: "#94a3b8",
+              fontSize: 12,
+            }}
             axisLine={false}
             tickLine={false}
           />
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip
+            content={
+              <CustomTooltip />
+            }
+          />
 
           <Line
-            type="monotone"
+            type="linear"
             dataKey="score"
             stroke="#6366f1"
             strokeWidth={3}
@@ -88,6 +142,7 @@ const PerformanceChart = ({ data }) => {
               r: 7,
               fill: "#818cf8",
             }}
+            connectNulls
           />
         </LineChart>
       </ResponsiveContainer>

@@ -3,9 +3,8 @@ const User = require("../models/User");
 
 const {
   generateQuestions,
-  evaluateAnswer,
   generateFinalFeedback,
-} = require("../services/aiInterviewService");
+} = require("../services/groqInterviewService");
 
 /*
 |--------------------------------------------------------------------------
@@ -14,36 +13,62 @@ const {
 */
 const startInterview = async (
   req,
-  res,
-  next
+  res
 ) => {
   try {
     const { role, level } =
       req.body;
 
-    const questions =
+    const rawQuestions =
       await generateQuestions(
         role,
         level
       );
+
+    
+
+    /*
+    IMPORTANT FIX
+    Convert string[] -> object[]
+    */
+    const formattedQuestions =
+      rawQuestions.map(
+        (q) => ({
+          question: q,
+          category:
+            "technical",
+        })
+      );
+
+   
 
     const interview =
       await Interview.create({
         userId: req.user._id,
         role,
         level,
-        questions,
+        questions:
+          formattedQuestions,
         status: "started",
         questionCount:
-          questions.length,
+          formattedQuestions.length,
       });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       interview,
     });
   } catch (error) {
-    next(error);
+    console.error(
+      "START INTERVIEW ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message,
+    });
   }
 };
 
@@ -67,8 +92,7 @@ const submitAnswer = async (
     const interview =
       await Interview.findOne({
         _id: interviewId,
-        userId:
-          req.user._id,
+        userId: req.user._id,
       });
 
     if (!interview) {
@@ -79,28 +103,17 @@ const submitAnswer = async (
       });
     }
 
-    const aiResult =
-      await evaluateAnswer(
-        question,
-        answer,
-        interview.role
-      );
-
     interview.answers.push({
       question,
       answer,
-      score:
-        aiResult.score,
-      feedback:
-        aiResult.feedback,
     });
 
     await interview.save();
 
     return res.status(200).json({
       success: true,
-      result:
-        aiResult,
+      message:
+        "Answer saved",
       interview,
     });
   } catch (error) {
@@ -121,14 +134,13 @@ const finishInterview = async (
   try {
     const {
       interviewId,
-      duration,
+      duration = 0,
     } = req.body;
 
     const interview =
       await Interview.findOne({
         _id: interviewId,
-        userId:
-          req.user._id,
+        userId: req.user._id,
       });
 
     if (!interview) {
@@ -139,127 +151,107 @@ const finishInterview = async (
       });
     }
 
-    /*
-    -----------------------------------
-    Prevent Duplicate Completion
-    -----------------------------------
-    */
     if (
       interview.status ===
       "completed"
     ) {
+      // Even if already completed,
+      // resync user stats to avoid mismatch
+      const totalInterviews =
+        await Interview.countDocuments({
+          userId: req.user._id,
+          status: "completed",
+        });
+
+      const bestInterview =
+        await Interview.findOne({
+          userId: req.user._id,
+          status: "completed",
+        })
+          .sort({
+            totalScore: -1,
+          })
+          .select("totalScore");
+
+      await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          totalInterviews,
+          bestScore:
+            bestInterview
+              ?.totalScore || 0,
+        }
+      );
+
       return res.status(400).json({
         success: false,
         message:
-          "Interview already completed",
+          "Already completed",
       });
     }
 
-    /*
-    -----------------------------------
-    Calculate Average Score
-    -----------------------------------
-    */
-    const totalScore =
-      interview.answers
-        .length
-        ? Number(
-            (
-              interview.answers.reduce(
-                (
-                  sum,
-                  item
-                ) =>
-                  sum +
-                  Number(
-                    item.score
-                  ),
-                0
-              ) /
-              interview
-                .answers
-                .length
-            ).toFixed(1)
-          )
-        : 0;
-
-    /*
-    -----------------------------------
-    Generate Final Feedback
-    -----------------------------------
-    */
-    const finalFeedback =
+    const aiResult =
       await generateFinalFeedback(
         interview.answers,
-        totalScore
+        interview.role
       );
 
-    /*
-    -----------------------------------
-    Update Interview
-    -----------------------------------
-    */
     interview.totalScore =
-      totalScore;
+      Number(
+        aiResult.totalScore || 0
+      );
+
+    interview.overallFeedback =
+      aiResult.feedback ||
+      "";
 
     interview.status =
       "completed";
 
-    interview.overallFeedback =
-      finalFeedback;
-
-    interview.questionCount =
-      interview.questions
-        ?.length || 0;
-
     interview.duration =
-      duration || 0;
+      duration;
 
     interview.completedAt =
       new Date();
 
     await interview.save();
 
-    /*
-    -----------------------------------
-    Update User Stats
-    -----------------------------------
-    */
-    const user =
-      await User.findById(
-        req.user._id
-      );
+    // Recalculate user stats from Interview collection
+    const totalInterviews =
+      await Interview.countDocuments({
+        userId: req.user._id,
+        status: "completed",
+      });
 
-    if (user) {
-      user.totalInterviews =
-        (user.totalInterviews ||
-          0) + 1;
+    const bestInterview =
+      await Interview.findOne({
+        userId: req.user._id,
+        status: "completed",
+      })
+        .sort({
+          totalScore: 1,
+        })
+        .select("totalScore");
 
-      user.bestScore =
-        Math.max(
-          user.bestScore ||
-            0,
-          totalScore
-        );
-
-      await user.save();
-    }
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        totalInterviews,
+        bestScore:
+          bestInterview
+            ?.totalScore || 0,
+      }
+    );
 
     return res.status(200).json({
       success: true,
       interview,
-      user,
     });
   } catch (error) {
     next(error);
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| History
-|--------------------------------------------------------------------------
-*/
 const getInterviewHistory =
   async (
     req,
@@ -268,16 +260,14 @@ const getInterviewHistory =
   ) => {
     try {
       const interviews =
-        await Interview.find(
-          {
-            userId:
-              req.user._id,
-          }
-        ).sort({
+        await Interview.find({
+          userId:
+            req.user._id,
+        }).sort({
           createdAt: -1,
         });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         interviews,
       });

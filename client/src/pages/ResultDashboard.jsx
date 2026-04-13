@@ -8,31 +8,90 @@ const ResultDashboard = () => {
 
   const backendResult = state?.result || {};
 
+  console.log("LOCATION STATE:", state);
+  console.log("BACKEND RESULT:", backendResult);
+
+  const answers = backendResult.answers || [];
+
+  const averageAnswerScore =
+    answers.length > 0
+      ? Number(
+          (
+            answers.reduce(
+              (sum, item) => sum + (item.score || 0),
+              0
+            ) / answers.length
+          ).toFixed(1)
+        )
+      : backendResult.totalScore || 0;
+
+  const strengths = answers
+    .filter((item) => (item.score || 0) >= 8)
+    .map(
+      (item) =>
+        item.question ||
+        item.feedback ||
+        "Strong response"
+    )
+    .slice(0, 5);
+
+  const improvements = answers
+    .filter((item) => (item.score || 0) < 8)
+    .map(
+      (item) =>
+        item.question ||
+        item.feedback ||
+        "Needs improvement"
+    )
+    .slice(0, 5);
+
+  const keyInsights = [
+    `Role: ${backendResult.role || "N/A"}`,
+    `Level: ${backendResult.level || "N/A"}`,
+    `Questions Completed: ${
+      backendResult.questionCount ||
+      answers.length
+    }`,
+    `Overall Score: ${
+      backendResult.totalScore || 0
+    }/10`,
+    ...strengths,
+  ].slice(0, 10);
+
   const result = {
     totalScore:
-      backendResult.totalScore ?? 8.4,
+      backendResult.totalScore ?? 0,
+
     overallFeedback:
       backendResult.overallFeedback ||
-      "Strong technical foundation with good communication. Improve answer structure and provide more real-world examples.",
+      "Keep practicing more interview scenarios.",
+
     confidence:
-      backendResult.confidence ?? 86,
-    clarity:
-      backendResult.clarity ?? 8.2,
-    technicalDepth:
-      backendResult.technicalDepth ??
-      8.8,
+      (backendResult.totalScore || 0) * 10,
+
+    clarity: averageAnswerScore,
+
+    technicalDepth: averageAnswerScore,
+
     strengths:
-      backendResult.strengths || [
-        "Clear communication",
-        "Good technical understanding",
-        "Confident response style",
-      ],
+      strengths.length > 0
+        ? strengths
+        : [
+            "Good overall interview performance",
+          ],
+
     improvements:
-      backendResult.improvements || [
-        "Use more examples",
-        "Improve answer structure",
-        "Be concise in explanations",
-      ],
+      improvements.length > 0
+        ? improvements
+        : [
+            "Practice more advanced questions",
+          ],
+
+    keyInsights,
+
+    recommendation:
+      backendResult.overallFeedback ||
+      "Focus on improving weak answers and practice structured responses.",
   };
 
   const performanceLabel =
@@ -42,10 +101,13 @@ const ResultDashboard = () => {
       ? "Strong"
       : "Improving";
 
+  const topInsights =
+    result.keyInsights.slice(0, 10);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
       <div className="mx-auto max-w-7xl px-6 py-10">
-        
+
         {/* Premium Header */}
         <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -112,64 +174,55 @@ const ResultDashboard = () => {
 
         {/* Main Layout */}
         <div className="grid gap-8 lg:grid-cols-3">
-          
-          {/* Main Analytics */}
+
+          {/* Left */}
           <div className="lg:col-span-2 space-y-8">
-          <Card className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-2xl">
-  {/* Background Glow */}
-  <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
-  <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-purple-500/10 blur-3xl" />
 
-  <div className="relative z-10">
-    {/* Header */}
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-indigo-400">
-          AI Executive Review
-        </p>
-        <h2 className="mt-3 text-3xl font-bold">
-          Top 10 Key Insights
-        </h2>
-      </div>
+            {/* Top Insights */}
+            <Card className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-2xl">
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
+              <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-purple-500/10 blur-3xl" />
 
-      <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1 text-xs font-medium text-indigo-300">
-        Premium Report
-      </span>
-    </div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.25em] text-indigo-400">
+                      AI Executive Review
+                    </p>
+                    <h2 className="mt-3 text-3xl font-bold">
+                      Top  Key Insights
+                    </h2>
+                  </div>
 
-    {/* 10 Key Points Grid */}
-    <div className="mt-8 grid gap-4 md:grid-cols-2">
-      {[
-        "Strong technical fundamentals",
-        "Clear problem-solving approach",
-        "Good communication confidence",
-        "Needs more real-world examples",
-        "Improve STAR answer structure",
-        "Better concise explanations required",
-        "Strong role-specific knowledge",
-        "Increase confidence in delivery",
-        "Improve edge-case thinking",
-        "Practice leadership scenarios",
-      ].map((point, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition hover:bg-white/[0.07]"
-        >
-          <div className="flex items-start gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-sm font-bold">
-              {index + 1}
-            </div>
+                  <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1 text-xs font-medium text-indigo-300">
+                    Premium Report
+                  </span>
+                </div>
 
-            <p className="text-sm leading-7 text-gray-300">
-              {point}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</Card>
+                <div className="mt-8 grid gap-4 md:grid-cols-2">
+                  {topInsights.map(
+                    (point, index) => (
+                      <div
+                        key={index}
+                        className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition hover:bg-white/[0.07]"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-sm font-bold">
+                            {index + 1}
+                          </div>
 
+                          <p className="text-sm leading-7 text-gray-300">
+                            {point}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {/* Radar */}
             <Card className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
               <p className="text-sm uppercase tracking-[0.2em] text-indigo-400">
                 Performance Analytics
@@ -203,7 +256,7 @@ const ResultDashboard = () => {
             </Card>
           </div>
 
-          {/* Right Insights Panel */}
+          {/* Right */}
           <div className="space-y-8">
             <Card className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
               <h3 className="text-xl font-semibold">
@@ -224,7 +277,6 @@ const ResultDashboard = () => {
               </div>
             </Card>
 
-            {/* AI Recommendation */}
             <Card className="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-8 shadow-2xl backdrop-blur-xl">
               <p className="text-sm uppercase tracking-[0.2em] text-indigo-300">
                 AI Recommendation
@@ -235,9 +287,7 @@ const ResultDashboard = () => {
               </h3>
 
               <p className="mt-3 text-sm leading-7 text-gray-300">
-                Focus on structured STAR-based answers,
-                include real-world project examples,
-                and improve concise communication.
+                {result.recommendation}
               </p>
 
               <button

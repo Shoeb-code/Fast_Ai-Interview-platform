@@ -1,17 +1,15 @@
 const StatCard = ({
   title,
-  value,
+  value = 0,
   subtitle,
-  trend = "+12%",
+  trend = "0%",
   icon = "📊",
 }) => {
   return (
     <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/10">
-      
-      {/* Background Glow */}
+
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-500/10 blur-2xl transition-all duration-300 group-hover:bg-indigo-500/20" />
 
-      {/* Top Row */}
       <div className="relative z-10 flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-gray-400">
@@ -28,7 +26,6 @@ const StatCard = ({
         </div>
       </div>
 
-      {/* Bottom Row */}
       <div className="relative z-10 mt-6 flex items-center justify-between">
         <p className="text-sm text-gray-400">
           {subtitle}

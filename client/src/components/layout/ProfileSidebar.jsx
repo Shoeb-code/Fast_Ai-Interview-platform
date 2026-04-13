@@ -73,7 +73,7 @@ const ProfileSidebar = ({
                 Interviews
               </p>
               <p className="mt-2 text-xl font-bold text-white">
-                 {authUser?.totalInterviews }
+                 {authUser?.totalInterviews}
               </p>
             </div>
 
