@@ -10,13 +10,33 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
-// Global middlewares
+
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://fast-ai-interview-platform.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://fast-ai-interview-platform.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman/mobile apps)
+      if (!origin) return callback(null, true);
+
+      // allow localhost + production
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // allow all Vercel preview deployments
+      if (origin.includes(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      return callback(
+        new Error("Not allowed by CORS")
+      );
+    },
     methods: [
       "GET",
       "POST",
