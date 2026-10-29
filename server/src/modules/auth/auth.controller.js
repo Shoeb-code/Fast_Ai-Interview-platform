@@ -214,11 +214,15 @@ const forgotPassword = async (req, res, next) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await Otp.findOneAndDelete({ email: normalizedEmail });
+    await Otp.findOneAndDelete({
+      email: normalizedEmail,
+      purpose: "forgot-password",
+    });
 
     await Otp.create({
       email: normalizedEmail,
       otp,
+      purpose: "forgot-password",
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
@@ -245,6 +249,7 @@ const verifyOtp = async (req, res, next) => {
     const otpDoc = await Otp.findOne({
       email: email.trim().toLowerCase(),
       otp: otp.toString(),
+      purpose: "forgot-password",
     });
 
     if (!otpDoc) {
@@ -280,6 +285,7 @@ const resetPassword = async (req, res, next) => {
     const otpDoc = await Otp.findOne({
       email: normalizedEmail,
       otp: otp.toString(),
+      purpose: "forgot-password",
     });
 
     if (!otpDoc) {
@@ -310,7 +316,9 @@ const resetPassword = async (req, res, next) => {
     user.password = password;
     await user.save();
 
-    await Otp.deleteOne({ email: normalizedEmail });
+    await Otp.deleteOne({
+      _id: otpDoc._id,
+    });
 
     return res.status(200).json({
       success: true,

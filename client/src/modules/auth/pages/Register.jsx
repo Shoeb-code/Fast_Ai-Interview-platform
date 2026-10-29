@@ -1,59 +1,75 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-} from "react";
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../../shared/services/api";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../shared/context/AuthContext";
+import {
+  User,
+  Mail,
+  Lock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  CheckCircle2,
+  ShieldCheck,
+  RotateCw,
+} from "lucide-react";
 
 const Register = () => {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
+  const { completeLogin, isAuthenticated } = useAuth();
+  const timerRef = useRef(null);
 
-  const {
-    completeLogin,
-  } = useAuth();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    otp: "",
+  });
 
-  const timerRef =
-    useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [formError, setFormError] = useState("");
 
-  const [formData, setFormData] =
-    useState({
-      fullName: "",
-      email: "",
-      password: "",
-      otp: "",
-    });
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const handleChange = (e) => {
+    setFormError("");
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-  const [otpSent, setOtpSent] =
-    useState(false);
+  const startTimer = () => {
+    setTimer(30);
+    clearInterval(timerRef.current);
 
-  const [timer, setTimer] =
-    useState(0);
+    timerRef.current = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
-  /*
-  --------------------------------
-  HANDLE INPUT
-  --------------------------------
-  */
-  const handleChange = (
-    e
-  ) => {
-    setFormData(
-      (prev) => ({
-        ...prev,
-        [e.target.name]:
-          e.target.value,
-      })
-    );
+  useEffect(() => {
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const validateEmail = (value) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   };
 
   /*
@@ -61,307 +77,406 @@ const Register = () => {
   SEND OTP
   --------------------------------
   */
-  const handleSendOtp =
-    async () => {
-      if (
-        !formData.email
-      ) {
-        toast.error(
-          "Please enter email first"
-        );
-        return;
+  const handleSendOtp = async () => {
+    setFormError("");
+
+    if (!formData.fullName.trim()) {
+      setFormError("Please enter your full name.");
+      return;
+    }
+
+    const cleanEmail = formData.email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setFormError("Please enter your email address.");
+      return;
+    }
+
+    if (!validateEmail(cleanEmail)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!formData.password || formData.password.length < 6) {
+      setFormError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await api.post("/auth/send-register-otp", {
+        email: cleanEmail,
+      });
+
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || "Failed to send OTP");
       }
 
-      try {
-        setLoading(
-          true
-        );
-
-        await api.post(
-          "/auth/send-register-otp",
-          {
-            email:
-              formData.email,
-          }
-        );
-
-        toast.success(
-          "OTP sent successfully ✨"
-        );
-
-        setOtpSent(
-          true
-        );
-
-        startTimer();
-      } catch (
-        error
-      ) {
-        toast.error(
-          error
-            ?.response
-            ?.data
-            ?.message ||
-            "Failed to send OTP"
-        );
-      } finally {
-        setLoading(
-          false
-        );
-      }
-    };
-
-  /*
-  --------------------------------
-  REGISTER
-  --------------------------------
-  */
-  const handleRegister =
-    async (e) => {
-      e.preventDefault();
-
-      try {
-        setLoading(
-          true
-        );
-
-        const res =
-          await api.post(
-            "/auth/verify-register-otp",
-            formData
-          );
-
-        completeLogin(
-          res.data.token,
-          res.data.user
-        );
-
-        toast.success(
-          "Account created successfully 🎉"
-        );
-
-        navigate(
-          "/dashboard"
-        );
-      } catch (
-        error
-      ) {
-        toast.error(
-          error
-            ?.response
-            ?.data
-            ?.message ||
-            "Registration failed"
-        );
-      } finally {
-        setLoading(
-          false
-        );
-      }
-    };
-
-  /*
-  --------------------------------
-  TIMER
-  --------------------------------
-  */
-  const startTimer = () => {
-    setTimer(30);
-
-    clearInterval(
-      timerRef.current
-    );
-
-    timerRef.current =
-      setInterval(() => {
-        setTimer(
-          (
-            prev
-          ) => {
-            if (
-              prev <= 1
-            ) {
-              clearInterval(
-                timerRef.current
-              );
-              return 0;
-            }
-
-            return (
-              prev - 1
-            );
-          }
-        );
-      }, 1000);
+      toast.success("Verification code sent to your email 📩");
+      setOtpSent(true);
+      startTimer();
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to send verification code. Please check your email.";
+      setFormError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    return () =>
-      clearInterval(
-        timerRef.current
-      );
-  }, []);
+  /*
+  --------------------------------
+  VERIFY & REGISTER
+  --------------------------------
+  */
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    if (!formData.otp || formData.otp.trim().length !== 6) {
+      setFormError("Please enter the 6-digit verification code.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await api.post("/auth/verify-register-otp", {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        otp: formData.otp.trim(),
+      });
+
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || "Registration failed");
+      }
+
+      completeLogin(res.data.token, res.data.user);
+      toast.success("Account created successfully 🎉");
+      navigate("/dashboard");
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed. Please check the OTP and try again.";
+      setFormError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-950 to-black text-white">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        {/* LEFT PANEL */}
-        <div className="relative hidden overflow-hidden border-r border-white/10 px-16 lg:flex lg:flex-col lg:justify-center">
-          <div className="absolute -left-20 top-20 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
-          <div className="absolute right-0 top-1/3 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div className="absolute bottom-20 left-1/3 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+    <div className="min-h-screen bg-slate-50/60 text-slate-900 selection:bg-indigo-500 selection:text-white">
+      <div className="grid min-h-screen lg:grid-cols-12">
+        {/* Left Branding Showcase Panel (Desktop) */}
+        <div className="relative hidden lg:col-span-6 lg:flex flex-col justify-between border-r border-slate-200/80 bg-white p-12 xl:p-16">
+          {/* Subtle Ambient Light */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.08),transparent_50%)]"
+          />
 
-          <div className="absolute inset-0 opacity-[0.04]">
-            <div className="h-full w-full bg-[linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] bg-[size:32px_32px]" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              Next Gen Interview SaaS
-            </div>
-
-            <h1 className="mt-6 text-5xl font-bold leading-tight">
-              Unlock Your
-              <span className="block bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-                AI Career Edge
-              </span>
+          {/* Value Proposition */}
+          <div className="my-auto max-w-lg w-full">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 xl:text-4xl leading-tight">
+              Accelerate your interview readiness with AI.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-gray-400">
-              Practice with intelligent AI interviews, real-time reports, and performance analytics.
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
+              Create your candidate account to practice realistic interview rounds, get scored against industry rubrics, and land your dream tech offer.
             </p>
+
+            {/* Structured Value Highlights */}
+            <div className="mt-8 space-y-5">
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    500+ Role Specializations
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                    Targeted practice for Frontend, Backend, Fullstack, ML, DevOps, and Product roles.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Live Answer Evaluation
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                    Sub-3s latency feedback measuring technical depth, problem solving, and structure.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    100% Free Practice Tier
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                    No credit card required. Start your first practice round in less than 2 minutes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Key Metric Strip */}
+            <div className="mt-10 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <p className="text-lg font-extrabold text-slate-900">12.5K+</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Candidates</p>
+                </div>
+                <div className="border-x border-slate-200">
+                  <p className="text-lg font-extrabold text-slate-900">92%</p>
+                  <p className="text-[11px] text-slate-500 font-medium">Pass Rate</p>
+                </div>
+                <div>
+                  <p className="text-lg font-extrabold text-slate-900">&lt; 2.4s</p>
+                  <p className="text-[11px] text-slate-500 font-medium">AI Feedback</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Security Footer */}
+          <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 pt-5">
+            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+            <span>256-bit encrypted • Private candidate records</span>
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="relative flex items-center justify-center px-6 py-12">
-          <div className="absolute right-10 top-10 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
-          <div className="absolute bottom-10 left-10 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl" />
-
-          <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.03] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
-            <div className="absolute left-0 top-0 h-[3px] w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500" />
-
-            <div className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-              Secure Signup
+        {/* Right Form Column */}
+        <div className="lg:col-span-6 flex flex-col justify-center px-4 py-8 sm:px-8 lg:px-12 xl:px-16">
+          <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-9 shadow-xl shadow-slate-200/60 ring-1 ring-slate-900/5">
+            {/* Header */}
+            <div>
+              <span className="inline-block rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                Candidate Registration
+              </span>
+              <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                Create your account
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Get started with free AI-powered mock interviews and feedback.
+              </p>
             </div>
 
-            <h2 className="mt-6 text-4xl font-bold">
-              Create Your
-              <span className="block bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-                AI Career Account
-              </span>
-            </h2>
+            {/* Error Alert */}
+            {formError && (
+              <div className="mt-5 rounded-xl border border-red-200 bg-red-50/80 p-3.5 text-xs leading-relaxed text-red-700">
+                <p className="font-semibold text-red-800">Registration Notice</p>
+                <p className="mt-0.5">{formError}</p>
+              </div>
+            )}
 
-            <form
-              onSubmit={
-                handleRegister
-              }
-              className="mt-8 space-y-5"
-            >
-              <input
-                type="text"
-                name="fullName"
-                value={
-                  formData.fullName
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Full name"
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                required
-              />
+            {/* Registration Form */}
+            <form onSubmit={handleRegister} className="mt-6 space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder="Alex Morgan"
+                    disabled={otpSent}
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 shadow-xs disabled:bg-slate-50 disabled:text-slate-500"
+                  />
+                </div>
+              </div>
 
-              <input
-                type="email"
-                name="email"
-                value={
-                  formData.email
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Email"
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                required
-              />
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="name@example.com"
+                    autoComplete="email"
+                    disabled={otpSent}
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 shadow-xs disabled:bg-slate-50 disabled:text-slate-500"
+                  />
+                </div>
+              </div>
 
-              <input
-                type="password"
-                name="password"
-                value={
-                  formData.password
-                }
-                onChange={
-                  handleChange
-                }
-                placeholder="Password"
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                required
-              />
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Minimum 6 characters"
+                    autoComplete="new-password"
+                    disabled={otpSent}
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 shadow-xs disabled:bg-slate-50 disabled:text-slate-500"
+                  />
+                  {!otpSent && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
 
+              {/* Verification Code Step */}
               {!otpSent ? (
                 <button
                   type="button"
-                  onClick={
-                    handleSendOtp
-                  }
-                  disabled={
-                    loading
-                  }
-                  className="w-full rounded-2xl bg-gradient-to-r from-indigo-700 via-purple-700 to-cyan-700 py-3 font-semibold"
+                  onClick={handleSendOtp}
+                  disabled={loading}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 disabled:opacity-60 cursor-pointer"
                 >
-                  {loading
-                    ? "Sending OTP..."
-                    : "Send Verification OTP"}
+                  {loading ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>Sending Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Verification Code</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </button>
               ) : (
-                <div className="space-y-4">
-                  <input
-                    type="text"
-                    name="otp"
-                    value={
-                      formData.otp
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    placeholder="Enter OTP"
-                    className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3"
-                    required
-                  />
+                <div className="space-y-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-indigo-900">
+                        6-Digit Verification Code
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setOtpSent(false)}
+                        className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition"
+                      >
+                        Edit Details
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-indigo-400">
+                        <KeyRound className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="text"
+                        name="otp"
+                        maxLength={6}
+                        value={formData.otp}
+                        onChange={handleChange}
+                        placeholder="123456"
+                        required
+                        className="w-full rounded-xl border border-indigo-200 bg-white pl-10 pr-4 py-2.5 text-center text-lg font-bold tracking-widest text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 shadow-xs"
+                      />
+                    </div>
+                  </div>
 
                   <button
                     type="submit"
-                    disabled={
-                      loading
-                    }
-                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-700 via-cyan-700 to-sky-700 py-3 font-semibold"
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-60 cursor-pointer"
                   >
-                    {loading
-                      ? "Creating..."
-                      : "Verify & Continue"}
+                    {loading ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>Creating Account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Verify & Create Account</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
                   </button>
 
-                  <p className="text-center text-xs text-gray-400">
-                    {timer >
-                    0
-                      ? `Resend in ${timer}s`
-                      : "You can resend OTP"}
-                  </p>
+                  <div className="text-center text-xs text-slate-500">
+                    {timer > 0 ? (
+                      <span>Resend code available in {timer}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={loading}
+                        className="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-800 transition cursor-pointer"
+                      >
+                        <RotateCw className="h-3 w-3" />
+                        <span>Resend Verification Code</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </form>
 
-            <p className="mt-6 text-center text-sm text-gray-400">
-              Already have an account?{" "}
+            {/* Bottom Login Link */}
+            <div className="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-600">
+              <span>Already have an account? </span>
               <Link
                 to="/login"
-                className="text-emerald-400"
+                className="font-semibold text-indigo-600 hover:text-indigo-800 transition"
               >
                 Sign in
               </Link>
-            </p>
+            </div>
+          </div>
+
+          {/* Privacy Note */}
+          <div className="mt-6 text-center text-xs text-slate-500">
+            <span>By registering, you agree to our </span>
+            <span className="font-medium text-slate-700">Terms of Service</span>
+            <span> and </span>
+            <span className="font-medium text-slate-700">Privacy Policy</span>.
           </div>
         </div>
       </div>

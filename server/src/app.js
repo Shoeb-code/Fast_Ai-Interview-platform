@@ -54,11 +54,17 @@ app.get("/", (req, res) => {
   });
 });
 
-// Modular API Routes
+// Modular API Routes (Standard /api prefix)
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/interview", interviewRoutes);
+
+// Root Aliases (Ensures backward compatibility for clients calling /auth, /users, etc. without /api)
+app.use("/health", healthRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/interview", interviewRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

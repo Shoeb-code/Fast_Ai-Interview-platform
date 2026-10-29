@@ -1,35 +1,46 @@
 import React from "react";
 import {
-  TrendingUp,
   Brain,
-  Activity,
   Target,
+  Activity,
+  TrendingUp,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
-const stats = [
+const dimensions = [
   {
-    title: "Confidence",
-    value: "86%",
-    icon: TrendingUp,
-    desc: "Strong communication and delivery confidence.",
-  },
-  {
-    title: "Technical",
-    value: "8.8",
+    title: "Technical Depth",
+    weight: "40% Weight",
+    score: "8.8 / 10",
     icon: Brain,
-    desc: "Excellent technical depth and accuracy.",
+    color: "bg-indigo-50 text-indigo-600",
+    desc: "Evaluates conceptual correctness, architecture trade-offs, and awareness of edge cases.",
   },
   {
-    title: "Clarity",
-    value: "8.2",
-    icon: Activity,
-    desc: "Clear structure with room for refinement.",
-  },
-  {
-    title: "Success Rate",
-    value: "92%",
+    title: "Problem Formulation",
+    weight: "25% Weight",
+    score: "8.5 / 10",
     icon: Target,
-    desc: "High probability of interview success.",
+    color: "bg-violet-50 text-violet-600",
+    desc: "Measures hypothesis validation, boundary condition reasoning, and step-by-step logic.",
+  },
+  {
+    title: "Structure & STAR Method",
+    weight: "20% Weight",
+    score: "8.2 / 10",
+    icon: Activity,
+    color: "bg-emerald-50 text-emerald-600",
+    desc: "Checks situation setup, task delegation, concrete action taken, and quantifiable result.",
+  },
+  {
+    title: "Delivery & Clarity",
+    weight: "15% Weight",
+    score: "91% Benchmark",
+    icon: TrendingUp,
+    color: "bg-amber-50 text-amber-600",
+    desc: "Scores response conciseness, absence of filler words, and professional communication cadence.",
   },
 ];
 
@@ -37,96 +48,119 @@ const AnalyticsPanel = () => {
   return (
     <section
       id="analytics"
-      className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-10 shadow-2xl backdrop-blur-2xl"
+      className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-10 lg:p-12 shadow-sm ring-1 ring-slate-900/5"
     >
-      {/* Glow Background */}
-      <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
-      <div className="absolute -left-20 bottom-0 h-52 w-52 rounded-full bg-purple-500/10 blur-3xl" />
+      {/* Section Header */}
+      <div className="max-w-2xl">
+        <span className="inline-block rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+          Evaluation Methodology
+        </span>
+        <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          Multi-Factor Scoring & Performance Intelligence
+        </h2>
+        <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-600">
+          Instead of generic thumbs-up/down ratings, our evaluation engine breaks down every response across four standardized industry dimensions calibrated against actual hiring rubrics.
+        </p>
+      </div>
 
-      <div className="relative z-10">
-        {/* Heading */}
-        <div className="mb-10">
-          <p className="text-sm uppercase tracking-[0.2em] text-indigo-400">
-            AI Analytics
-          </p>
-
-          <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-            Performance Intelligence
-          </h2>
-
-          <p className="mt-4 max-w-3xl text-lg leading-8 text-gray-400">
-            Advanced AI-driven analytics designed to
-            evaluate communication, technical depth,
-            confidence, and success probability in
-            real-time.
-          </p>
-        </div>
-
-        {/* KPI Grid */}
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={item.title}
-                className="group rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl transition duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-white/[0.08]"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400">
-                  <Icon size={22} />
+      {/* 4 Dimension Cards */}
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {dimensions.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={item.title}
+              className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 transition hover:bg-white hover:border-slate-300 hover:shadow-xs"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl ${item.color}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    {item.weight}
+                  </span>
                 </div>
 
-                <p className="mt-5 text-sm text-gray-400">
+                <h3 className="mt-4 text-sm font-bold text-slate-900">
                   {item.title}
-                </p>
-
-                <h3 className="mt-3 text-3xl font-bold">
-                  {item.value}
                 </h3>
-
-                <p className="mt-3 text-sm leading-7 text-gray-500">
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
                   {item.desc}
                 </p>
               </div>
-            );
-          })}
+
+              <div className="mt-5 border-t border-slate-200/80 pt-3">
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Average Candidate Benchmark:
+                </span>
+                <p className="text-base font-extrabold text-slate-900">
+                  {item.score}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Lower Deep-Dive Grid: Rubrics & Actionable Feedback */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        {/* Card 1: Objective Rubric */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900">
+              Unbiased, Objective Evaluation Rubric
+            </h3>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            Interview results must be consistent. Our model uses structured JSON schema validation to evaluate candidate submissions against role-specific criteria with zero human interviewer mood variance.
+          </p>
+
+          <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-xs text-slate-600">
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Standardized benchmarks matching Tier-1 tech rubrics</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Deterministic JSON output for structured dashboard reporting</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Zero hallucinated scoring criteria</span>
+            </li>
+          </ul>
         </div>
 
-        {/* Bottom AI Insights */}
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-indigo-400">
-              AI Recommendation
-            </p>
-
-            <h3 className="mt-3 text-xl font-semibold">
-              Growth Opportunity
+        {/* Card 2: Model Answers & Recommendations */}
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-6 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900">
+              Prescriptive Model Answers & Revision Guidance
             </h3>
-
-            <p className="mt-3 leading-8 text-gray-400">
-              Focus on concise structured answers,
-              project-based examples, and stronger
-              leadership communication to push your
-              performance into the top 95 percentile.
-            </p>
           </div>
+          <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            Evaluation is only helpful if you know how to improve. At the end of every round, FastAI generates tailored model answers comparing what you said with what top-percentile candidates say.
+          </p>
 
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-indigo-300">
-              Product Insight
-            </p>
-
-            <h3 className="mt-3 text-xl font-semibold">
-              Real-Time Analytics Engine
-            </h3>
-
-            <p className="mt-3 leading-8 text-gray-300">
-              This component processes live interview
-              answers and generates intelligent
-              scoring metrics, personalized feedback,
-              and predictive success indicators.
-            </p>
-          </div>
+          <ul className="mt-4 space-y-2 border-t border-indigo-100/80 pt-4 text-xs text-slate-700">
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Identifies exact missing technical terms and conceptual gaps</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Generates side-by-side ideal responses tailored to your experience level</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Tracks improvement across consecutive practice sessions</span>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
