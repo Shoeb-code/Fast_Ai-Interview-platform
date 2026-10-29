@@ -8,13 +8,13 @@ import Footer from "../../../shared/components/layout/Footer";
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-indigo-500 selection:text-white">
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
       <TestimonialsSection />
       <CTASection />
-      <Footer  />
+      <Footer />
     </div>
   );
 };

@@ -1,85 +1,72 @@
 import React from "react";
-import {
-  ArrowUpRight,
-  Sparkles,
-  CheckCircle2,
-} from "lucide-react";
+import { CheckCircle2, ArrowUpRight } from "lucide-react";
 
 const FeatureCard = ({
-  icon,
-  subtitle,
+  icon: Icon,
+  badge = "Core Engine",
   title,
+  subtitle,
   desc,
+  benefits = [],
+  metricLabel = "Evaluation Speed",
+  metricValue = "< 2.5s Latency",
 }) => {
   return (
-    <div id= "features" className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-2xl transition duration-300 hover:-translate-y-1 hover:border-indigo-500/30 hover:bg-white/[0.08]">
-      
-      {/* Glow Effect */}
-      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-indigo-500/10 blur-3xl transition group-hover:bg-indigo-500/20" />
-
-      <div className="relative z-10">
-        {/* Top */}
-        <div className="flex items-start justify-between">
-          <div className="text-4xl">
-            {icon}
+    <div className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200">
+      <div>
+        {/* Top Header Strip */}
+        <div className="flex items-center justify-between">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+            {Icon && <Icon className="h-5 w-5" />}
           </div>
 
-          <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
-            Premium
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+            {badge}
           </span>
         </div>
 
         {/* Subtitle */}
-        <p className="mt-5 text-xs uppercase tracking-[0.25em] text-indigo-400">
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p className="mt-5 text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+            {subtitle}
+          </p>
+        )}
 
         {/* Title */}
-        <h2 className="mt-3 text-2xl font-bold leading-tight">
+        <h3 className="mt-1.5 text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-snug">
           {title}
-        </h2>
+        </h3>
 
         {/* Description */}
-        <p className="mt-4 leading-8 text-gray-400">
+        <p className="mt-3 text-sm leading-relaxed text-slate-600">
           {desc}
         </p>
 
-        {/* Benefits */}
-        <div className="mt-6 space-y-3">
-          {[
-            "Real-time AI powered",
-            "Scalable architecture",
-            "Instant actionable insights",
-          ].map((item) => (
-            <div
-              key={item}
-              className="flex items-center gap-3 text-sm text-gray-300"
-            >
-              <CheckCircle2
-                size={16}
-                className="text-indigo-400"
-              />
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
-              Feature Impact
-            </p>
-            <p className="mt-1 text-sm font-medium text-white">
-              High User Engagement
-            </p>
+        {/* Benefits Checklist */}
+        {benefits.length > 0 && (
+          <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
+            {benefits.map((item, idx) => (
+              <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-600 mt-0.5" />
+                <span className="leading-snug">{item}</span>
+              </div>
+            ))}
           </div>
+        )}
+      </div>
 
-          <ArrowUpRight
-            size={18}
-            className="text-indigo-400 transition group-hover:translate-x-1 group-hover:-translate-y-1"
-          />
+      {/* Bottom Metric Strip */}
+      <div className="mt-6 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            {metricLabel}
+          </p>
+          <p className="mt-0.5 text-xs font-bold text-slate-900">
+            {metricValue}
+          </p>
         </div>
+
+        <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
       </div>
     </div>
   );

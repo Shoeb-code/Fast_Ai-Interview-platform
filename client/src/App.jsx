@@ -4,9 +4,9 @@ import AppRoutes from "./routes/AppRoutes";
 
 const App = () => {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-white text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
       <Navbar />
-      <main className="pt-20">
+      <main className="pt-16 sm:pt-18">
         <AppRoutes />
       </main>
     </div>

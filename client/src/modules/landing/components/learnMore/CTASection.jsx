@@ -1,19 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 
 const stats = [
   {
-    value: "120+",
-    label: "Mock Interviews",
+    value: "12,500+",
+    label: "Simulations Run",
   },
   {
     value: "92%",
-    label: "Success Rate",
+    label: "Offer Rate",
   },
   {
-    value: "Live",
-    label: "AI Feedback",
+    value: "< 2.4s",
+    label: "Feedback Speed",
   },
 ];
 
@@ -21,69 +21,68 @@ const CTASection = () => {
   return (
     <section
       id="cta"
-      className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 px-8 py-16 shadow-2xl backdrop-blur-2xl"
+      className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-12 sm:px-12 sm:py-16 text-white shadow-xl shadow-slate-900/10 ring-1 ring-slate-800"
     >
-      {/* Background Glow */}
-      <div className="absolute -left-24 top-0 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-      <div className="absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
-      <div className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pink-500/5 blur-3xl" />
+      {/* Subtle Ambient Radial Light */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.18),transparent_60%)]"
+      />
 
-      <div className="relative z-10 text-center">
+      <div className="relative z-10 max-w-3xl mx-auto text-center">
         {/* Top Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-indigo-300">
-          <Sparkles size={14} />
-          Premium AI Experience
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Start Practice Free • No Credit Card Required</span>
         </div>
 
         {/* Heading */}
-        <h2 className="mt-6 text-4xl font-bold leading-tight md:text-5xl">
-          Ready to Crack Your
-          <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Next Interview?
-          </span>
+        <h2 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+          Ready to experience your first AI-calibrated interview?
         </h2>
 
-        {/* Description */}
-        <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-gray-400">
-          Practice with AI-powered mock interviews,
-          receive instant feedback, and improve with
-          real-time performance analytics built for
-          placements, internships, and job success.
+        {/* Subtitle */}
+        <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-300">
+          Join thousands of engineering, product, and data candidates practicing with industry-standard rubrics and landing top offers.
         </p>
 
-        {/* CTA Button */}
-        <Link
-          to="/setup"
-          className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-sm font-semibold shadow-xl shadow-indigo-500/20 transition duration-300 hover:scale-[1.02] hover:shadow-indigo-500/40"
-        >
-          Start Interview
-          <ArrowRight size={18} />
-        </Link>
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <Link
+            to="/setup"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 hover:shadow-md cursor-pointer"
+          >
+            <span>Start Practice Session</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
 
-        {/* Trust Metrics */}
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          <Link
+            to="/login"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-700 hover:border-slate-600 cursor-pointer"
+          >
+            <span>Sign In to Dashboard</span>
+          </Link>
+        </div>
+
+        {/* Stat Metrics Strip */}
+        <div className="mt-12 grid grid-cols-3 gap-3 border-t border-slate-800/90 pt-8">
           {stats.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-lg backdrop-blur-xl"
-            >
-              <p className="text-3xl font-bold text-white">
+            <div key={item.label}>
+              <p className="text-xl sm:text-2xl font-extrabold text-white">
                 {item.value}
               </p>
-
-              <p className="mt-2 text-sm text-gray-400">
+              <p className="mt-0.5 text-xs text-slate-400 font-medium">
                 {item.label}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Bottom Trust Text */}
-        <p className="mt-8 text-sm text-gray-500">
-          Trusted by students, developers, and
-          professionals preparing for real-world
-          interviews.
-        </p>
+        {/* Trust Bottom Notice */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <span>Private & confidential candidate practice • No public transcripts</span>
+        </div>
       </div>
     </section>
   );
